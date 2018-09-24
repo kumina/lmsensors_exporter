@@ -3,22 +3,24 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/mdlayher/lmsensors"
 	"github.com/mdlayher/lmsensors_exporter"
 	"github.com/prometheus/client_golang/prometheus"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	telemetryAddr = flag.String("telemetry.addr", ":9165", "address for lmsensors exporter")
-	metricsPath   = flag.String("telemetry.path", "/metrics", "URL path for surfacing collected metrics")
+	app				= kingpin.New("lmsensors_exporter", "Prometheus metrics exporter for lmsensors")
+	telemetryAddr = app.Flag("web.listen-address", "Address to listen on for web interface and telemetry").Default(":9165").String()
+	metricsPath   = app.Flag("web.telemetry-path","Path under which to expose metrics.").Default("/metrics").String()
 )
 
 func main() {
-	flag.Parse()
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	prometheus.MustRegister(lmsensorsexporter.New(lmsensors.New()))
 
